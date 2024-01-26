@@ -1,0 +1,379 @@
+\documentclass{article}
+\usepackage[UTF8]{ctex}
+% \usepackage[showframe]{geometry} %调整页边距showframe显示框架
+\usepackage{amsmath}  %数学环境
+\usepackage{paralist,bbding,pifont} %罗列环境
+\usepackage{lmodern}  %中文环境与amsmath格式冲突
+\usepackage{array,graphicx}  %插入表格、图片
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{appendix}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{tocloft}  %目录
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\renewcommand\cftsecdotsep{\cftdotsep}
+\renewcommand\cftsecleader{\cftdotfill{\cftsecdotsep}}
+\renewcommand {\cftdot}{$ \cdot $}
+\renewcommand {\cftdotsep}{1.5}
+\hypersetup{colorlinks=true,linkcolor=black}
+\usepackage[a4paper, portrait, margin=2.5cm]{geometry}
+\renewcommand{\baselinestretch}{1.25} %行间距取多倍行距（设置值为1.5）
+\setlength{\baselineskip}{20pt} 
+
+\usepackage{listings}%插入代码
+\usepackage{color}
+\lstset{%代码格式的配置
+extendedchars=false,            % Shutdown no-ASCII compatible
+language=Matlab,                % ！！！选择代码的语言
+basicstyle=\footnotesize\tt,    % the size of the fonts that are used for the code
+tabsize=3,                            % sets default tabsize to 3 spaces
+numbers=left,                   % where to put the line-numbers
+numberstyle=\tiny,              % the size of the fonts that are used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it's 1 each line
+                                % will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code   %
+keywordstyle=\color[rgb]{0,0,1},                % keywords
+commentstyle=\color[rgb]{0.133,0.545,0.133},    % comments
+stringstyle=\color[rgb]{0.627,0.126,0.941},      % strings
+backgroundcolor=\color{white}, % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,                   % adds a frame around the code
+captionpos=b,                   % sets the caption-position to bottom
+breaklines=true,                % sets automatic line breaking
+breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+title=\lstname,                 % show the filename of files included with \lstinputlisting;
+                                % also try caption instead of title
+mathescape=true,escapechar=?    % escape to latex with ?..?
+escapeinside={\%*}{*)},         % if you want to add a comment within your code
+%columns=fixed,                  % nice spacing
+%morestring=[m]',                % strings
+%morekeywords={%,...},%          % if you want to add more keywords to the set
+%    break,case,catch,continue,elseif,else,end,for,function,global,%
+%    if,otherwise,persistent,return,switch,try,while,...},%
+ }
+%% 页眉
+\usepackage{fancyhdr}
+\newcommand{\myname}{李佳}
+\newcommand{\myid}{2100010793}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\myid}
+\lhead{\myname}
+\cfoot{\thepage}
+
+%%%% Declare %%%
+\DeclareMathOperator{\Ran}{Ran}
+\DeclareMathOperator{\Dom}{Dom}
+\DeclareMathOperator{\Rank}{Rank}
+
+\newcommand{\md}{\mathrm{d}}
+\newcommand{\mR}{\mathbb{R}}
+\newcommand{\mbF}{\mathbb{F}}
+%%% Declare %%%
+\newtheorem{innercustomthm}{Problem}
+\newenvironment{prob}[1]
+{\renewcommand\theinnercustomthm{#1}\innercustomthm}
+{\endinnercustomthm}
+
+%%设置
+\title{数值代数$\ $第四次上机作业}
+\author{李佳~2100010793}
+\date{}
+
+%%正文
+
+\begin{document}
+\zihao{-4}
+\maketitle
+\begin{section}{问题描述}
+    实现QR分解,并编制基于QR分解的求解线性方程组和线性最小二乘问题的通用
+    子程序,并利用该通用子程序完成下面三个计算任务.\\
+
+    \noindent\textbf{(1)} 求解以下三个线性方程组,并将第一个方程组的计算结果与Guass消去法
+    和列主元Guass消去法得到的计算结果进行对比,将后两个方程组的计算结果与平方根法和改进的平方根
+    法进行对比.
+    $$ \begin{bmatrix}
+        6 & 1 &  &  & & & \\
+        8 & 6 & 1 & & & &\\
+         & 8 & 6 & 1 & & &\\
+         & & \ddots & \ddots & \ddots& &\\
+         & & & 8 & 6 & 1 & \\
+         & & & & 8 & 6 & 1 \\
+         & & & &  & 8 & 6 
+    \end{bmatrix}
+    \begin{bmatrix}
+        x_1\\ x_2 \\ x_3 \\ \vdots \\ x_{82}\\x_{83}\\x_{84}
+    \end{bmatrix}=
+    \begin{bmatrix}
+        7 \\ 15 \\ 15 \\ \vdots \\ 15 \\ 15 \\14
+    \end{bmatrix}(1)
+    $$
+    $$ \begin{bmatrix}
+        10 & 1 &  &  & & & \\
+        1 & 10 & 1 & & & &\\
+         & 1 & 10 & 1 & & &\\
+         & & \ddots & \ddots & \ddots& &\\
+         & & & 1 & 10 & 1 & \\
+         & & & & 1 & 10 & 1 \\
+         & & & &  & 1 & 10 
+    \end{bmatrix}
+    \begin{bmatrix}
+        x_1\\ x_2 \\ x_3 \\ \vdots \\ x_{98}\\x_{99}\\x_{100}
+    \end{bmatrix}=
+    \begin{bmatrix}
+        11 \\ 12 \\ 12 \\ \vdots \\ 12 \\ 12 \\11
+    \end{bmatrix}(2)
+    $$
+    $$ \begin{bmatrix}
+        \frac{1}{1} & \frac{1}{2} & \frac{1}{3} & \dots & \frac{1}{38}&\frac{1}{39} & \frac{1}{40}\\
+        \frac{1}{2} & \frac{1}{3} & \frac{1}{4} & \dots & \frac{1}{39}&\frac{1}{40} & \frac{1}{41}\\
+        \frac{1}{3} & \frac{1}{4} & \frac{1}{5} & \dots & \frac{1}{40}&\frac{1}{41} & \frac{1}{42}\\
+         & & \ddots & \ddots & \ddots& &\\
+        \frac{1}{38} & \frac{1}{39} & \frac{1}{40} & \dots & \frac{1}{75}&\frac{1}{76} & \frac{1}{77}\\
+        \frac{1}{39} & \frac{1}{40} & \frac{1}{41} & \dots & \frac{1}{76}&\frac{1}{77} & \frac{1}{78}\\
+        \frac{1}{40} & \frac{1}{41} & \frac{1}{42} & \dots & \frac{1}{77}&\frac{1}{78} & \frac{1}{79}\\
+    \end{bmatrix}
+    \begin{bmatrix}
+        x_1\\ x_2 \\ x_3 \\ \vdots \\ x_{38}\\x_{39}\\x_{40}
+    \end{bmatrix}=
+    \begin{bmatrix}
+        \sum_{k=1}^{40} \frac{1}{k} \\ \sum_{k=2}^{41} \frac{1}{k} \\ \sum_{k=3}^{42} \frac{1}{k} \\ \vdots \\ \sum_{k=38}^{77} \frac{1}{k} \\ \sum_{k=39}^{78} \frac{1}{k} \\\sum_{k=40}^{79} \frac{1}{k}
+    \end{bmatrix}(3)
+    $$
+
+    \noindent\textbf{(2)} 求一个二次多项式$y=at^2+bt+c$,使得在残向量的2范数最小的意义下拟合表中数据
+    \begin{table}[ht]
+        \centering
+        \begin{tabular}{c|ccccccc}
+            \hline
+            $t_i$ & $- 1$ & $- 0.75$ & $- 0.5$ & $0$ & $0.25$ & $0.5$ & $0.75$ \\
+            \hline
+            $y_i$ & $1.00$ & $0.8125$ & $0.75$ & $1.00$ & $1.3125$ & $1.75$ & $2.3125$ \\
+            \hline
+        \end{tabular}
+    \end{table}
+    
+    \noindent\textbf{(3)} 在房产估价的线性模型
+    $$y = x_0+a_1x_1 + a_2x_2+ \dots + a_{11}x_{11}$$
+    中,$a_1,a_2,...,a_{11}$分别表示税、浴室数目、占地面积、车库数目、房屋数目、居室数目、
+    房龄、建筑类型、户型及壁炉数目,$y$代表房屋价格.现根据表中给出的28组数据,求出模型中参数的
+    最小二乘结果.
+    \begin{table}[ht]
+        \centering
+        \begin{tabular}{ccccccccccc}
+            \hline
+            \multicolumn{7}{c}{$y$} \\
+            \hline
+            25.9 & 29.5 & 27.9 & 25.9 & 29.9 & 29.9 & 30.9 \\
+            28.9 & 84.9 & 82.9 & 35.9 & 31.5 & 31.0 & 30.9 \\
+            30.0 & 28.9 & 36.9 & 41.9 & 40.5 & 43.9 & 37.5 \\
+            37.9 & 44.5 & 37.9 & 38.9 & 36.9 & 45.8 & 41.0 \\
+            \hline
+        \end{tabular}
+    \end{table}
+\end{section}
+\begin{section}{数值方法}
+    \begin{subsection}{Householder方法约化矩阵}
+        我们希望通过Householder方法实现QR分解,即用Householder变换作为
+    约化矩阵为上三角形.通过公式$$w = \dfrac{x-\alpha e_1}{\left\lVert x-\alpha e_1\right\rVert_2}$$
+    来计算Householder向量$w$.
+
+    在计算中,为避免第一分量上两个相近的数相减,考虑在$x_1>0$时调整第一分量的计算方式:
+    $$v_1 = x_1-\left\lVert x\right\rVert_2 = \dfrac{x_1^2-\left\lVert x\right\rVert_2^2}{x_1+\left\lVert x\right\rVert_2} 
+     = \dfrac{-(x_2^2+...+x_n^2)}{x_1+\left\lVert x\right\rVert_2}$$
+
+    另外,为避免计算$\left\lVert x\right\rVert_2 $时发生上溢或下溢,考虑先对$x$归一化,
+    用$x/\left\lVert x\right\rVert_{\infty} $代替$x$进行计算(由计算公式可知,这不影响计算结果).
+
+    最后,输出的Householder向量不必完全算出来,只保留系数$\beta$和向量$v$来输出,以减少精度损失.
+    \end{subsection}
+    \begin{subsection}{基于Householder方法进行QR分解}
+        通过Householder变换对矩阵进行约化,每一步先计算当前子矩阵第一列对应的Householder向量,
+    对子矩阵进行Householder变化,使第一列除第一行外变为0,再继续对右下角的子矩阵进行上述操作.
+
+    计算的过程中,不必将正交矩阵计算出来,而是只存储对应的Householder向量的系数$\beta$和向量$v$.为将向量存储
+    在矩阵$A$的下三角,对$v$规格化为第一个分量为1的向量,从而可以在$A$的对角线以下存储第一分量以外的分量.
+    此时令$\tilde{\beta}=v_1^2\beta$,存储在向量$d$中.最后输出矩阵$A$和向量$d$作为QR分解的结果.
+    \end{subsection}
+    \begin{subsection}{通过QR分解解线性方程组}
+        QR分解后,要解的方程变为:$QRx = b$.故只需解$Rx = Q^Tb$.
+        注意到,基于Householder变换的QR分解的Q满足:
+        $$R=Q^TA = H_{n-1}H_{n-2}...H_1A,$$
+        故$Q^Tb = H_{n-1}H_{n-2}...H_1b$.
+        
+        计算$Q^Tb$的过程中,每一步需计算$(I-\beta vv^T)b$,可写为$b-\beta(v^Tb)v$,故只需计算向量的内积、数乘、相减,
+        一步工作量至多$O(n)$,避免矩阵-向量运算带来$O(n^2)$的工作量.从而计算$Q^Tb$至多$O(n^2)$的工作量.
+        
+        之后再进行回代法解上三角系数矩阵方程即可.
+    \end{subsection}
+    \begin{subsection}{通过QR分解解最小二乘问题}
+        与解线性方程组的过程类似,先要解出$c = Q^Tb$,之后再取$c$的前$n$个分量组成的向量$c_1$,解上三角形方程
+        $Rx = c_1$即可.计算中需要注意的过程在2.3中已经提及.
+    \end{subsection}
+\end{section}
+\begin{section}{理论分析结果}
+    \noindent\textbf{(1)} 与其他方法相比,QR分解法的工作量相对较大,因此耗时预计比其他方法更长.同时,由于涉及
+    更多的计算过程,QR分解法与列主元Guass消去法、改进的平方根法相比可能产生更大的误差.
+
+    \noindent\textbf{(2)(3)} 与正则化方法相比,QR分解处理问题的条件数更小,因此误差更小,残向量2范数更小,
+    求出的最小二乘结果更准.
+\end{section}
+
+\begin{section}{具体算法实现}
+    \begin{subsection}{Householder方法约化矩阵}
+        \begin{lstlisting}
+function [v,beta] = house(x)
+% 计算 Householder 变换 . 输出 H=I-beta*v*v^T 中的 beta, v
+n = length(x);
+x = x/max(abs(x));      % 归一化计算防止上溢下溢
+sigma = x(2:n)'*x(2:n); 
+v = x;
+if sigma == 0     % 若向量除第一分量外均为 0 则无需进行 Householder 变换
+    beta = 0;     % 令 beta 为 0 不进行 Householder 变换
+else
+    alpha = sqrt(x(1)^2 + sigma);  % 向量 x 的 模长
+    if x(1) <= 0  % 若第一分量不大于 0 则进行一般的计算
+        v(1) = x(1) - alpha;
+    else          % 若第一分量大于 0 则调整计算方式
+        v(1) = -sigma/(x(1)+alpha);
+    end           
+    beta = 2 /(sigma + v(1)^2);  % 计算系数 beta
+end
+        \end{lstlisting}
+    \end{subsection}
+    \begin{subsection}{基于Householder方法进行QR分解}
+        \begin{lstlisting}
+function [A, d] = QR_fac(A)
+% 基于 Householder 变换的 QR 分解
+% 输出矩阵 A 包括上三角矩阵和各次 Householder 变换向量 
+% 输出向量 d 为各次 Householder 变换向量中的系数
+[m,n] = size(A);
+d = zeros(n,1); % 存储 Householder 变换中对应的系数
+for j = 1:n
+    if j < m    
+        [v,beta] = house(A(j:m,j)); % 计算应进行的 Householder 变换
+        % 对子矩阵进行 Householder 变换
+        % 将矩阵矩阵运算化为矩阵向量运算与向量向量运算
+        A(j:m,j:n) = A(j:m, j:n) - (beta * v) * (v' * A(j:m, j:n)); 
+        d(j) = beta * v(1)^2;         % 存储规格化后的系数 beta
+        A(j+1:m,j) = v(2:m-j+1)/v(1); % 存储规格化后的向量后面的分量
+    end
+end
+        \end{lstlisting}
+    \end{subsection}   
+    \begin{subsection}{通过QR分解解线性方程组}
+        \begin{lstlisting}
+function [b] = QR_sol(A,b)
+% 基于 Householder 方法的 QR 分解方法解方程组
+% 输出方程组的解
+[A,d] = QR_fac(A);   % 对矩阵进行 QR 分解
+[~,n] = size(A);
+for i = 1:n-1        % 计算向量 Q^Tb
+    c = d(i)*(b(i) + A(i+1:n,i)'*b(i+1:n)); % 计算 beta(v^Tb)
+    b(i) = b(i) - c; % 分别计算 b(i) 和 b(i+1:n)
+    b(i+1:n) = b(i+1:n) - c * A(i+1:n,i);
+end
+for j = n:-1:2       % 回代法解 Rx=c
+    b(j) = b(j)/A(j,j);
+    b(1:j-1) = b(1:j-1) - b(j)* A(1:j-1,j);
+end
+b(1) = b(1)/A(1,1);
+        \end{lstlisting}
+    \end{subsection}  
+    \begin{subsection}{通过QR分解解最小二乘问题}
+        \begin{lstlisting}
+function [x] = LS_sol(A,b)
+% LS_SOL QR 法求解最小二乘问题
+[m,n] = size(A);
+[A,d] = QR_fac(A); % 对矩阵进行 QR 分解
+for i = 1:n        % 计算向量 Q^Tb
+    if i<m
+        c = d(i)*(b(i) + A(i+1:m,i)'*b(i+1:m)); % 计算 beta(v^Tb)
+        b(i) = b(i) - c; % 分别计算 b(i) 和 b(i+1:n)
+        b(i+1:m) = b(i+1:m) - c * A(i+1:m,i);
+    end
+end
+for j = n:-1:2 % 回代法解 Rx=c1
+    b(j) = b(j)/A(j,j);
+    b(1:j-1) = b(1:j-1) - b(j)* A(1:j-1,j);
+end
+b(1) = b(1)/A(1,1);
+x = b(1:n);
+        \end{lstlisting}
+    \end{subsection} 
+\end{section}
+
+\begin{section}{数值结果及相应分析}
+\noindent\textbf{(1)} 最终各方法计算的误差($\infty$范数)与耗时如下表所示:
+\begin{table}[htbp!]
+    \caption{$\infty$范数误差 }
+    \begin{tabular}{cccccc}\hline
+      & QR法      & Guass消去法         & 列主元Guass消去法      & 平方根法             & 改进的平方根法          \\ \hline
+    方程组(1) & 2.00     & 5.37 e+08         & 2.80 e-06         & \textbackslash{} & \textbackslash{} \\
+    方程组(2) & 8.88 e-16 & \textbackslash{} & \textbackslash{} & 2.22 e-16         & 1.11 e-16         \\
+    方程组(3) & 162.58 & \textbackslash{} & \textbackslash{} & 3.51 e+12         & 67.53      \\  \hline
+    \end{tabular}
+    \caption{计算耗时(s)}
+    \begin{tabular}{cccccc}\hline
+        & QR法      & Guass消去法         & 列主元Guass消去法      & 平方根法             & 改进的平方根法          \\ \hline
+    方程组(1) & 3.19 e-3 & 0                & 1.87 e-3         & \textbackslash{} & \textbackslash{} \\
+    方程组(2) & 5.48 e-3 & \textbackslash{} & \textbackslash{} & 1.32 e-2         & 3.59 e-3         \\
+    方程组(3) & 1.11 e-3 & \textbackslash{} & \textbackslash{} & 5.03 e-3         & 4.62 e-4    \\ \hline    
+    \end{tabular}
+    \end{table}
+
+    由此可知:
+    \begin{compactitem} 
+        \item QR分解的误差相比列主元Guass消去法和改进的平方根法均更大,这可能与其更多的计算步骤有关.QR法在方程组(2)、(3)的
+        计算误差与后两种方法相差没有很大,这说明QR法具有一定的数值稳定性.但在方程组(1)的误差相差较大.经检查QR分解结果发现,R的最后一行最后一列的元素数量级已经到了1e-15,
+        R已经接近奇异,因此产生了较大的误差.这可能是由于每一次的正交变换将每一列的模长集中在对角线上,而正交变换不改变行列式,从而使得对角线上
+        的最后一个元素不得不变得很小.这是QR分解相比其他解法的缺点.
+        \item 与一般的Guass消去法和平方根法相比,QR分解法的误差更小,这说明相比未进行优化的两种方法,QR法的数值稳定性更优越.
+        \item 除平方根法外,QR法的计算用时比其他方法均更高,但并没有高很多.这是由于QR法本身更多的计算步骤.平方根法的耗时主要在计算平方根的过程.\\
+   \end{compactitem}
+   \noindent\textbf{(2)} QR法得到的最小二乘结果如下:
+   \begin{table}[ht]
+    \centering
+    \begin{tabular}{ccc}
+        \hline
+        $a$ & $b$ & $c$ \\
+        $1.0000$ & $1.0000$ & $1.0000$ \\
+        \hline
+    \end{tabular}
+    \end{table}
+
+    \noindent\textbf{(3)} QR法得到的最小二乘结果如下:
+    \begin{table}[htbp!]
+        \centering
+        \begin{tabular}{cccccccccccc}\hline
+        $x_0$    & $x_1$    & $x_2$    & $x_3$    & $x_4$    & $x_5$    & $x_6$    & $x_7$    & $x_8$    & $x_9$  & $x_{10}$ & $x_{11}$ \\
+        2.078 & 0.719 & 9.681 & 0.154 & 13.680 & 1.987 & -0.958 & -0.484 & -0.074 & 1.019 & 1.444 & 2.903 \\ \hline
+        \end{tabular}
+    \end{table}
+    
+    通过已有的通用子程序,可计算通过正则化方法得到的最小二乘结果.经计算,两问题下QR法和正则化方法得到结果的残向量2-范数为:
+    \begin{table}[htbp!]
+        \centering
+        \caption{残向量2-范数}
+        \begin{tabular}{ccc}\hline
+              & QR法        & 正则化方法      \\ \hline
+        问题(2) & 1.1102 e-16 & 3.5108 e-16 \\
+        问题(3) & 16.3404    & 16.3404   \\ \hline
+        \end{tabular}
+    \end{table}
+    
+    由此可见,
+    \begin{compactitem} 
+        \item QR法条件数更小,得出的最小二乘结果误差更小,残向量的2-范数更小,计算结果一般优于正则化方法.
+        \item 对于较良态的问题,正则化方法与QR法的结果并没有很明显的差别.
+    \end{compactitem}
+\end{section}
+\end{document}
