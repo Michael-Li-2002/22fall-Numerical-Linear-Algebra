@@ -1,0 +1,1030 @@
+\documentclass{article}
+\usepackage{diagbox}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{makecell}
+\usepackage[UTF8]{ctex}
+% \usepackage[showframe]{geometry} %调整页边距showframe显示框架
+\usepackage{amsmath}  %数学环境
+\usepackage{paralist,bbding,pifont} %罗列环境
+\usepackage{lmodern}  %中文环境与amsmath格式冲突
+\usepackage{array,graphicx}  %插入表格、图片
+\usepackage{float}
+\usepackage{appendix}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{tocloft}  %目录
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{setspace}
+%\usepackage{algorithm}
+\usepackage[ruled]{algorithm2e}
+\usepackage{algpseudocode}
+\renewcommand\cftsecdotsep{\cftdotsep}
+\renewcommand\cftsecleader{\cftdotfill{\cftsecdotsep}}
+\renewcommand {\cftdot}{$ \cdot $}
+\renewcommand {\cftdotsep}{1.5}
+\hypersetup{colorlinks=true,linkcolor=black}
+\usepackage[a4paper, portrait, margin=2.5cm]{geometry}
+\renewcommand{\baselinestretch}{1.25} %行间距取多倍行距（设置值为1.5）
+\setlength{\baselineskip}{20pt} 
+\usepackage{tikz}
+%\documentclass[tikz]{stanalone}	% 
+\usepackage{pgfplots}	
+\pgfplotsset{compat=newest}
+%\usetikzlibrary{arrows.meta}
+
+\usepackage{listings}%插入代码
+\usepackage{color}
+\lstset{%代码格式的配置
+extendedchars=false,            % Shutdown no-ASCII compatible
+language=Matlab,                % ！！！选择代码的语言
+basicstyle=\footnotesize\tt,    % the size of the fonts that are used for the code
+tabsize=3,                            % sets default tabsize to 3 spaces
+numbers=left,                   % where to put the line-numbers
+numberstyle=\tiny,              % the size of the fonts that are used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it's 1 each line
+                                % will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code   %
+keywordstyle=\color[rgb]{0,0,1},                % keywords
+commentstyle=\color[rgb]{0.133,0.545,0.133},    % comments
+stringstyle=\color[rgb]{0.627,0.126,0.941},      % strings
+backgroundcolor=\color{white}, % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,                   % adds a frame around the code
+captionpos=b,                   % sets the caption-position to bottom
+breaklines=true,                % sets automatic line breaking
+breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+title=\lstname,                 % show the filename of files included with \lstinputlisting;
+                                % also try caption instead of title
+mathescape=true,escapechar=?    % escape to latex with ?..?
+escapeinside={\%*}{*)},         % if you want to add a comment within your code
+%columns=fixed,                  % nice spacing
+%morestring=[m]',                % strings
+%morekeywords={%,...},%          % if you want to add more keywords to the set
+%    break,case,catch,continue,elseif,else,end,for,function,global,%
+%    if,otherwise,persistent,return,switch,try,while,...},%
+ }
+%% 页眉
+\usepackage{fancyhdr}
+\newcommand{\myname}{李佳}
+\newcommand{\myid}{2100010793}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\myid}
+\lhead{\myname}
+\cfoot{\thepage}
+
+%%%% Declare %%%
+\DeclareMathOperator{\Ran}{Ran}
+\DeclareMathOperator{\Dom}{Dom}
+\DeclareMathOperator{\Rank}{Rank}
+
+\newcommand{\md}{\mathrm{d}}
+\newcommand{\mR}{\mathbb{R}}
+\newcommand{\mbF}{\mathbb{F}}
+%%% Declare %%%
+\newtheorem{innercustomthm}{Problem}
+\newenvironment{prob}[1]
+{\renewcommand\theinnercustomthm{#1}\innercustomthm}
+{\endinnercustomthm}
+
+%%设置
+\title{数值代数$\ $大作业}
+\author{李佳~2100010793}
+\date{}
+
+%%正文
+
+\begin{document}
+\zihao{-4}
+\maketitle
+\begin{section}{问题描述}
+\noindent 考虑Stokes方程
+$$ \left\{
+\begin{aligned}
+        -\Delta \vec{u} + \nabla p = \vec{F},\  &(x,y)\in (0,1)\times(0,1),\\
+        div\ \vec{u} = 0,\  &(x,y)\in (0,1)\times(0,1),
+\end{aligned}\right.$$
+条件为
+$$\frac{\partial u}{\partial\vec{n}}=b,\ y=0,\quad \frac{\partial u}{\partial\vec{n}}=t,\ y=1,$$
+$$\frac{\partial v}{\partial\vec{n}}=l,\ x=0,\quad \frac{\partial v}{\partial\vec{n}}=r,\ x=1,$$
+$$u=0,\ x=0,1,\quad v=0,\ y=0,1,$$
+其中$\vec{u}=(u,v)$为速度, $p$为压力, $\vec{F}=(f,g)$为外力, $\vec{n}$为外法向方向.
+
+利用交错网格上的MAC格式离散Stokes方程, 可得到如下线性方程组
+\begin{equation}\begin{pmatrix}
+    A & B\\
+    B^T& 0
+\end{pmatrix}\begin{pmatrix}
+    U\\P
+\end{pmatrix}=\begin{pmatrix}
+    F\\0
+\end{pmatrix}.\tag{$\ast$ }\end{equation}
+\noindent\textbf{1.} 分别取$N=64,128,256,512,1024,2048$, 以DGS为磨光子, 用基于V-cycle的多重网格方法求解离散问题($\ast $), 停机标准为
+$\lVert r_h\rVert_2/\lVert r_0\rVert_2\leq 10^{-8} $, 对不同的$\nu_1,\nu_2,L$, 比较V-cycle的次数和CPU时间, 并计算误差
+$$e_N = h(\sum_{j=1}^N\sum_{i=1}^{N-1}|u_{i,j-\frac{1}{2}}-u(x_i,y_{j-\frac{1}{2}})|^2+
+\sum_{j=1}^{N-1}\sum_{i=1}^{N}|v_{i-\frac{1}{2},j}-v(x_{i-\frac{1}{2}},y_{j})|^2)^{\frac{1}{2}}.$$
+
+\noindent\textbf{2.} 分别取$N=64,128,256,512$, 以Uzawa Iteration Method求解离散问题($\ast $), 停机标准为
+$\lVert r_h\rVert_2/\lVert r_0\rVert_2\leq 10^{-8} $, 并计算误差
+$$e_N = h(\sum_{j=1}^N\sum_{i=1}^{N-1}|u_{i,j-\frac{1}{2}}-u(x_i,y_{j-\frac{1}{2}})|^2+
+\sum_{j=1}^{N-1}\sum_{i=1}^{N}|v_{i-\frac{1}{2},j}-v(x_{i-\frac{1}{2}},y_{j})|^2)^{\frac{1}{2}}.$$
+
+\noindent\textbf{3.} 分别取$N=64,128,256,512,1024,2048$, 以Inexact Uzawa Iteration Method为迭代法求解离散问题($\ast $), 停机标准为
+$\lVert r_h\rVert_2/\lVert r_0\rVert_2\leq 10^{-8} $, 其中以V-cycle多重网格方法为预条件子求解每一步的子问题$AU_{k+1}=F-BP_k$, 对不同的
+$\alpha,\tau,\nu_1,\nu_2,L$, 比较外循环的迭代次数和CPU时间, 并计算误差
+$$e_N = h(\sum_{j=1}^N\sum_{i=1}^{N-1}|u_{i,j-\frac{1}{2}}-u(x_i,y_{j-\frac{1}{2}})|^2+
+\sum_{j=1}^{N-1}\sum_{i=1}^{N}|v_{i-\frac{1}{2},j}-v(x_{i-\frac{1}{2}},y_{j})|^2)^{\frac{1}{2}}.$$
+\end{section}
+\begin{section}{数值方法}
+    \begin{subsection}{V-cycle多重网格方法}
+        V-cycle多重网格方法是求解椭圆偏微分方程基于网格的离散方程的高效方法, 其思想来源于Guass-Seidel迭代法对此类问题的磨光性. 
+        迭代法的磨光性使得误差中高频震荡的分量快速衰减, 而低频分量衰减较慢. 而只要将低频分量限制在粗网格上, 低频分量也成为相对高频, 从而容易在粗网格上消去. 
+        
+        这一思想同样适用于一部分其它的问题, 其一般的方法是选择合适的磨光子、限制算子、提升算子, 在细网格上进行若干次磨光, 将残量方程限制到粗网格上, 递归使用该方法求近似解, 
+        再将误差提升到细网格上, 对解进行修正, 再做若干次磨光, 即完成了一次V-cycle(如图所示).
+
+        \ 
+
+        \noindent\begin{tikzpicture}
+            %\draw[rectangle=[black,very thick]];
+            \node[rectangle,draw,ultra thick,fill=blue!20] at (0,0)(A) {\makecell{初值$X_h^{(0)}$,\\$A_hX_h=b_h$迭代$\nu_1$次}};
+            \node[rectangle,draw,ultra thick,fill=blue!20] at (1,-4)(B) {\makecell{初值$X_{2h}^{(0)}=0$,\\$A_{2h}X_{2h}=b_{2h}$迭代$\nu_1$次}};
+            \node[rectangle,draw,ultra thick,fill=blue!20] at (3.7,-10)(C) {\makecell{直接解$A_{Lh}X_{Lh}=b_{Lh}$}($L=2^r$)};
+            \node[rectangle,draw,ultra thick,fill=blue!20] at (5.7,-6)(D) {\makecell{初值$X_{Lh/2}^{(\nu_1+1)}$,\\$A_{Lh/2}X_{Lh/2}=b_{Lh/2}$迭代$\nu_2$次}};
+            \node[rectangle,draw,ultra thick,fill=blue!20] at (8,0)(E) {\makecell{初值$X_{h}^{(\nu_1+1)}$,\\$A_{h}X_{h}=r_{h}$迭代$\nu_2$次}};
+            \draw[thick] (A.south)--node[left]{\makecell{残量$r_h=b_h-A_hX_h^{(\nu_1)}$,\\ 
+            并限制在粗网格上, \\令$b_{2h}=I^{2h}_hr_h$}}(B.north);
+            \draw[thick] (B.south)--node[left]{\makecell{残量$r_{2h}=b_{2h}-A_{2h}X_{2h}^{(\nu_1)}$,\\ 
+            并限制在粗网格上, \\令$b_{4h}=I^{4h}_{2h}r_{2h}$\\$\vdots$}}(C.north);
+            \draw[thick] (C.north)--node[right]{\makecell{修正$X_{Lh/2}^{(\nu_1+1)}=X_{Lh/2}^{(\nu_1)}+I_{Lh}^{Lh/2}X_{Lh}$}}(D.south);
+            \draw[thick] (D.north)--node[right]{\makecell{修正$X_h^{(\nu_1+1)}=X_h^{(\nu_1)}+I^h_{2h}X_{2h}^{(\nu_1+\nu_2+1)}$\\$\vdots$}}(E.south);
+        \end{tikzpicture}
+    \end{subsection}
+    \begin{subsection}{DGS迭代法}
+        由于求解的线性方程系数矩阵是对称不定的, 此时难以保证Guass-Seidel迭代法的磨光性, 因此使用为Stokes方程的多重网格方法求解量身定做的Distributive Guass Seidel迭代法
+        (A. Brandt \& N. Dinar 1979): 
+        
+        \noindent\textbf{1.} 用Guass-Seidel迭代法更新速度分量(对应于线性方程$AU = F-BP$.);
+        
+        \noindent\textbf{2.} 依次对网格内$N^2$个单元格计算散度方程的残量, 更新与该单元相关的速度、压力(如图所示).
+        
+        \ 
+
+        \begin{tikzpicture}
+            node[rectangle];
+            \draw  [black,very thick](-1,0) --(0,0)--node[left=4pt]{$-\frac{r}{4}$}(0,1)--(-1,1)--cycle ;
+            %\draw  [black,very thick](-1,1)--(2,1);
+            \draw  [black,very thick](0,2)--node[below=4pt]{$-\frac{r}{4}$}(1,2)--(1,1)--(0,1)--cycle;
+            \draw  [black,very thick](0,-1)--node[above=4pt]{$-\frac{r}{4}$}(1,-1)--(1,0)--(0,0)--cycle;
+            %\draw  [black,very thick](-1,0)--(-1,1);
+            %\draw  [black,very thick](0,-1)--(0,2);
+            \draw  [black,very thick](1,0)--node[left=4pt]{$+r$}(1,1)--(0,1)--(0,0)--cycle;
+            \draw  [black,very thick](2,0)--node[left=4pt]{$-\frac{r}{4}$}(2,1)--(1,1)--(1,0)--cycle;
+            \draw [black](0.5,-1.5) coordinate(A)node[below]{图 1. 内部单元};
+            \filldraw [blue]  (0.4,1.1) -- (0.6,1.1) -- (0.6,0.9) -- (0.4,0.9) --cycle ;
+            \filldraw [orange]  (0.4,0.1) -- (0.6,0.1) -- (0.6,-0.1) -- (0.4,-0.1) --cycle;
+            \filldraw [blue]  (1,0.65) -- (1.1,0.5) -- (1,0.35) -- (0.9,0.5) --cycle;
+            \filldraw [orange]  (0,0.65) -- (0.1,0.5) -- (0,0.35) -- (-0.1,0.5) --cycle;
+        
+            \filldraw [blue]  (2.4,1.5) -- (2.6,1.5) --node[right=4pt]{$+\frac{rh}{4}$} (2.6,1.3) -- (2.4,1.3) --cycle ;
+            \filldraw [blue]  (2.5,0.95) -- (2.6,0.8)coordinate(A)node[right=4pt]{$+\frac{rh}{4}$} -- (2.5,0.65) -- (2.4,0.8) --cycle;
+            \filldraw [orange]  (2.4,0.3) -- (2.6,0.3) --node[right=4pt]{$-\frac{rh}{4}$} (2.6,0.1) -- (2.4,0.1) --cycle;
+            \filldraw [orange]  (2.5,-0.25) -- (2.6,-0.4)coordinate(B)node[right=4pt]{$-\frac{rh}{4}$} -- (2.5,-0.55) -- (2.4,-0.4) --cycle;
+          \end{tikzpicture}\quad
+          \begin{tikzpicture}
+            node[rectangle];
+            \draw  [black,very thick](-1,0) --(0,0)--node[left=4pt]{$-\frac{r}{3}$}(0,1)--(-1,1)--cycle ;
+            %\draw  [black,very thick](-1,1)--(2,1);
+            %\draw  [black,very thick](0,2)--node[below=4pt]{$-\frac{r}{4}$}(1,2)--(1,1)--(0,1)--cycle;
+            \draw  [black,very thick](0,-1)--node[above=4pt]{$-\frac{r}{3}$}(1,-1)--(1,0)--(0,0)--cycle;
+            %\draw  [black,very thick](-1,0)--(-1,1);
+            %\draw  [black,very thick](0,-1)--(0,2);
+            \draw  [black,very thick](1,0)--node[left=4pt]{$+r$}(1,1)--(0,1)--(0,0)--cycle;
+            \draw  [black,very thick](2,0)--node[left=4pt]{$-\frac{r}{3}$}(2,1)--(1,1)--(1,0)--cycle;
+            \draw [black](0.5,-1.5) coordinate(A)node[below]{图 2. 边界单元};
+            \filldraw [blue]  (0.4,1.1) -- (0.6,1.1) -- (0.6,0.9) -- (0.4,0.9) --cycle ;
+            \filldraw [orange]  (0.4,0.1) -- (0.6,0.1) -- (0.6,-0.1) -- (0.4,-0.1) --cycle;
+            \filldraw [blue]  (1,0.65) -- (1.1,0.5) -- (1,0.35) -- (0.9,0.5) --cycle;
+            \filldraw [orange]  (0,0.65) -- (0.1,0.5) -- (0,0.35) -- (-0.1,0.5) --cycle;
+        
+            \filldraw [blue]  (2.4,1.5) -- (2.6,1.5) --node[right=4pt]{{\small 边界点}} (2.6,1.3) -- (2.4,1.3) --cycle ;
+            \filldraw [blue]  (2.5,0.95) -- (2.6,0.8)coordinate(A)node[right=4pt]{$+\frac{rh}{3}$} -- (2.5,0.65) -- (2.4,0.8) --cycle;
+            \filldraw [orange]  (2.4,0.3) -- (2.6,0.3) --node[right=4pt]{$-\frac{rh}{3}$} (2.6,0.1) -- (2.4,0.1) --cycle;
+            \filldraw [orange]  (2.5,-0.25) -- (2.6,-0.4)coordinate(B)node[right=4pt]{$-\frac{rh}{3}$} -- (2.5,-0.55) -- (2.4,-0.4) --cycle;
+          \end{tikzpicture}
+          \begin{tikzpicture}
+            node[rectangle];
+            %\draw  [black,very thick](-1,0) --(0,0)--node[left=4pt]{$-\frac{r}{2}$}(0,1)--(-1,1)--cycle ;
+            %\draw  [black,very thick](-1,1)--(2,1);
+            %\draw  [black,very thick](0,2)--node[below=4pt]{$-\frac{r}{4}$}(1,2)--(1,1)--(0,1)--cycle;
+            \draw  [black,very thick](0,-1)--node[above=4pt]{$-\frac{r}{2}$}(1,-1)--(1,0)--(0,0)--cycle;
+            %\draw  [black,very thick](-1,0)--(-1,1);
+            %\draw  [black,very thick](0,-1)--(0,2);
+            \draw  [black,very thick](1,0)--node[left=4pt]{$+r$}(1,1)--(0,1)--(0,0)--cycle;
+            \draw  [black,very thick](2,0)--node[left=4pt]{$-\frac{r}{2}$}(2,1)--(1,1)--(1,0)--cycle;
+            \draw [black](1,-1.5) coordinate(A)node[below]{图 3. 顶点单元};
+            \filldraw [blue]  (0.4,1.1) -- (0.6,1.1) -- (0.6,0.9) -- (0.4,0.9) --cycle ;
+            \filldraw [orange]  (0.4,0.1) -- (0.6,0.1) -- (0.6,-0.1) -- (0.4,-0.1) --cycle;
+            \filldraw [blue]  (1,0.65) -- (1.1,0.5) -- (1,0.35) -- (0.9,0.5) --cycle;
+            \filldraw [orange]  (0,0.65) -- (0.1,0.5) -- (0,0.35) -- (-0.1,0.5) --cycle;
+        
+            \filldraw [blue]  (2.4,1.5) -- (2.6,1.5) --node[right=4pt]{{\small 边界点}} (2.6,1.3) -- (2.4,1.3) --cycle ;
+            \filldraw [blue]  (2.5,0.95) -- (2.6,0.8)coordinate(A)node[right=4pt]{$+\frac{rh}{2}$} -- (2.5,0.65) -- (2.4,0.8) --cycle;
+            \filldraw [orange]  (2.4,0.3) -- (2.6,0.3) --node[right=4pt]{$-\frac{rh}{2}$} (2.6,0.1) -- (2.4,0.1) --cycle;
+            \filldraw [orange]  (2.5,-0.25) -- (2.6,-0.4)coordinate(B)node[right=4pt]{{\small 边界点}} -- (2.5,-0.55) -- (2.4,-0.4) --cycle;
+          \end{tikzpicture}
+
+        
+          
+          
+
+    \end{subsection}
+    \begin{subsection}{Uzawa迭代法}
+        Uzawa迭代法(Hirofumi Uzawa 1958)是求解鞍点问题的一类有效方法. 它的思想是将原线性方程转化为两组方程
+        $$\left\{\begin{aligned}
+            AU&=F-BP\\ B^TU&=O
+        \end{aligned}\right.$$
+        第一组方程系数矩阵对称正定, 相对容易获得精确解(如平方根法、共轭梯度法), 之后再对压力进行一次更新.
+        一次Uzawa迭代过程如下:
+
+        \noindent\textbf{1.} 求解$AU_{k+1}=F-BP_k$(可以是精确解, 可以是近似解);
+
+        \noindent\textbf{2.} 更新压力$P_{k+1} = P_k + \alpha(B^TU_{k+1})$.
+    
+    \end{subsection}
+    \begin{subsection}{共轭梯度法}
+        共轭梯度法是求解对称正定系数矩阵的线性方程的有效方法. 其思想是将线性方程求解转化为一个函数的最值问题. 
+        要找“下山”方向, 共轭梯度法不仅希望在当前下降最快的方向(即梯度的反方向)寻找, 还希望在前一步的下降方向上寻找, 也就是
+        在两个方向张成的平面上寻找下山落点. 如果对梯度方向进行优化, 即将残量方程的近似解作为梯度方向的一个优化方向, 则相当于
+        对问题做了预优, 可以减少迭代次数, 提高求解速度. 
+    \end{subsection}
+\end{section}
+\begin{section}{理论分析结果}
+    本上机报告中称$\nu_1$为"前磨光次数", $\nu_2$为"后磨光次数"; $r+1$为"网格层数"($L=2^r$, 底层网格单位长度为$Lh$); $\tau$为"近似解精度要求".
+
+   \noindent\textbf{1.} (1) 随着前后磨光次数增加, 每次V-cycle的残量理论上应该更小, 故次数减少; 
+    CPU时间同时受磨光次数和V-cycle次数影响, 
+   但随着磨光次数增加, 磨光本身的效果理论上减弱, 因此在磨光次数较大时, CPU时间有可能增大.
+   
+   (2) 随着$L$减小, 等价于网格层数减小, 每次V-cycle后的残量理论上应当增加, 因此V-cycle次数应增大; 网格层数的减少虽然减少了每次循环的时间, 但也导致低频分量难以快速消去, 因此总的CPU时间可能随之增加.
+
+   (3) 随着网格规模$N$增大, 理论上得到的计算解与真解的误差减小.
+
+   \noindent\textbf{2.} 在相同的网格规模$N$、 相同的初值的情况下, Exact Uzawa迭代法和V-cycle多重网格方法在停机标准下对残量有相同的要求, 理论上
+   误差应当差别不大; 并且随着网格规模$N$增大, 理论上得到的计算解与真解的误差减小.
+   
+   \noindent\textbf{3.} (1) 注意到 Uzawa 迭代法实际上是迭代格式$$P_{k+1}=(I-\alpha B^TA^{-1}B)P_k+\alpha B^TA^{-1}F,$$
+   计算可知$$B^TA^{-1}B=I-\frac{1}{N^2}\textbf{1}\cdot\textbf{1}^T,$$ $$\textbf{1}=(1,1,...,1)_{1\times N^2}^T.$$
+   由于$\textbf{1}\cdot\textbf{1}^T$与$\textbf{1}^T\cdot\textbf{1}=N^2$有共同非零特征值, 可知$B^TA^{-1}B$的全体特征值为$1$($N^2-1$重),$0$($1$重), 从而
+   $I-\alpha B^TA^{-1}B$的特征值为$1-\alpha\ $($N^2-1$重), $1$($1$重).
+
+   由此, 可知理论上$0\leq\alpha\leq 2$时才能保证$\rho(I-\alpha B^TA^{-1}B)\leq 1$. 事实上此时等于1. 尽管谱半径并不严格小于1, 但当$0<\alpha<2$时, 可以证明迭代法仍是收敛的.
+   设$B^TA^{-1}B$特征值$0$对应的特征子空间为$V_0=span\{\textbf{1}\}$, 特征值$1$对应特征子空间$V_1$, $V_0\oplus V_1=\mathbb{R}^{N^2}$且$V_0\perp V_1$. 于是迭代矩阵的特征值$1$对应特征子空间$V_0$, 
+   特征值$1-\alpha\neq 1$对应特征子空间$V_1$. 考虑真解$P=P^0+P^1,P^i\in V_i$, 满足方程$$B^TA^{-1}(F-BP)=O,$$
+   可知$B^TA^{-1}F=B^TA^{-1}BP=P^1\in V_1$. 设迭代得到的序列为$\{P_k\}_{k\in\mathbb{N}}$, 同理可知$B^TA^{-1}BP_k\in V_1$. 设$\delta_k=P_k-P_{k-1}, k\in\mathbb{N}$, 
+   则$$\delta_1=-\alpha(B^TA^{-1}BP_0-B^TA^{-1}F)\in V_1,$$
+   $$\Rightarrow \delta_k=(I-\alpha B^TA^{-1}B)\delta_{k-1}=...=(I-\alpha B^TA^{-1}B)^{k-1}\delta_1=(1-\alpha)^{k-1}\delta_1,$$
+   由$|1-\alpha|<1$, 可知$\sum_{k=1}^{\infty}\delta_k$收敛, 故迭代法收敛.
+   
+   由上述分析也可看出, 迭代法真正的"谱半径"应当是$|1-\alpha|$. 因此理论上$\alpha$越靠近1, 迭代法收敛更快, 外循环次数越少, CPU时间越少. 
+
+   (2) 近似解精度要求$\tau$越大, 近似解与真解偏差越大, 可能导致外循环迭代次数增大； CPU时间同时与$\tau$和外循环次数有关, 降低近似解精度可以减少每一步共轭梯度法的时间, 有利于降低CPU时间, 而外循环次数随之的增加
+   会提高CPU时间, 故CPU时间随$\tau$的变化不便预测. 
+
+   (3) 前后磨光次数越多, 一次V-cycle残量减小, 但由第1问的分析可知达到精度要求的效率可能降低, 因此CPU时间可能增加; 外循环迭代次数理论上只与$\alpha,\tau$有关, 因此外循环次数理论上与磨光次数关系不大. 
+
+   (4) 随着$L$减小, 等价于网格层数减小, 一次V-cycle残量增大, 达到精度要求的效率可能降低, CPU时间理论上应该增加; 外循环迭代次数理论上只与$\alpha,\tau$有关, 因此理论上与网格层数关系不大.
+
+   (5) 在相同的网格规模$N$、 相同的初值的情况下, Inexact Uzawa迭代法和Exact Uzawa迭代法、V-cycle多重网格方法在停机标准下对残量有相同的要求, 理论上
+   误差应当差别不大; 并且随着网格规模$N$增大, 理论上得到的计算解与真解的误差减小.
+\end{section}
+\begin{section}{具体算法实现}
+    \begin{subsection}{MAC交错网格下实现迭代法}
+        \begin{tikzpicture}[scale=2.5]
+            node[rectangle];
+            \draw [black,very thick] (0,0) grid (4,4);
+            \draw [->,black,very thick] (0,0)--(4.5,0); \draw [->,black,very thick] (0,0)--(0,4.5);
+            \foreach \i in {1,2,3}{
+                \foreach \j in {1,2,3,4}{
+                    \filldraw [red!]  (\j-0.6,\i+0.1) --node[above=1pt]{$V(\i,\j)$} (\j-0.4,\i+0.1) --(\j-0.4,\i-0.1) -- (\j-0.6,\i-0.1) --cycle ;
+                    \filldraw [orange]  (\i,\j-1+0.65)coordinate(A)node[above=0.3pt]{$U(\j,\i)$} -- (\i+0.1,\j-0.5) -- (\i,\j-1+0.35) -- (\i-0.1,\j-0.5) --cycle;
+                }
+            }
+            \foreach \i in {1,5}{
+                \foreach \j in {1,2,3,4}{
+                    \filldraw [red!]  (\j-0.6,\i-1+0.1) -- (\j-0.4,\i-1+0.1) -- (\j-0.4,\i-1-0.1) -- (\j-0.6,\i-1-0.1) --cycle ;
+                    \filldraw [orange]  (\i-1,\j-1+0.65) -- (\i-1+0.1,\j-0.5) -- (\i-1,\j-1+0.35) -- (\i-1-0.1,\j-0.5) --cycle;
+                }
+            }
+            \foreach \i in {1,2,3,4}{
+                \foreach \j in {1,2,3,4}{
+                    \filldraw[blue] (\i-0.5,\j-0.5)coordinate(A)node[above=1pt,black]{$P(\j,\i)$} circle (0.1);
+                }
+            }
+            \filldraw [orange]  (4.5,3.15) -- (4.6,3)coordinate(A)node[right=3pt,black]{$\Rightarrow U$}  -- (4.5,2.85)-- (4.4,3) --cycle;
+            \filldraw [red]  (4.4,2.1) -- (4.6,2.1) --node[right=3pt,black]{$\Uparrow V$} (4.6,1.9) -- (4.4,1.9) --cycle ;
+            \filldraw[blue] (4.5,1)coordinate(A)node[right=3pt]{$\ P$} circle (0.1);
+        \end{tikzpicture}
+
+        对问题中的未知量$U,V,P$进行如图所示的编号. 具体实现中, 由于矩阵是稀疏的, 因此各种矩阵-向量乘法、DGS、GS迭代法均采取分量形式, 迭代法每一步更新的顺序按编号顺序进行
+        ( 例如上图中, 对$U$的更新按照$U(1,1)-U(1,2)-U(1,3)-U(2,1)-...-U(4,3)$进行 ).
+        
+        DGS迭代法按照如下方式实现:
+
+        \begin{algorithm}[H]  %其中这里面不能有H不然会报错，不过不影响结果
+            \caption{DGS 迭代法}%算法名字
+            \LinesNumbered %要求显示行号
+            \KwIn{初值 U,V,P, 常数项 F,G,D}%输入参数
+            \KwOut{迭代1次后的[U,V,P]=DGS(U,V,P,F,G,D)}%输出
+
+            G-S迭代分量形式更新速度: $[U,V]^T = (D_A-L_A)^{-1}(L_A^T[U,V]^T+[F,G]^T-BP)$\;
+            
+            \For{i=1:N}{
+                \For{j=1:N}{
+                    \If{$(i,j)$是内部单元}{
+                        $r = D(i,j) - N(U(i,j)-U(i,j-1)+V(i,j)-V(i-1,j))$\; 
+                        $d = r/(4N)$\;
+                        $ U(i,j)\quad\ \   = U(i,j) +d;\qquad\quad\   V(i,j)\quad\ \ =V(i,j)+d$\;
+                        $ U(i,j-1)=U(i,j-1)-d;\ \ \ \ \ V(i-1,j)= V(i-1,j)-d$\;
+                        $P(i,j)\quad\ \ = P(i,j) + r$\;
+                        $ P(i,j-1)=P(i,j-1) -r/4;\ \  P(i,j+1)=P(i,j+1)-r/4$\;
+                        $ P(i+1,j)=P(i+1,j)-r/4;\ \  P(i-1,j)=P(i-1,j)-r/4$\;
+                    }
+                    \If{$(i,j)$是边界单元(以2.2节图2所示为例)}{
+                        $r = D(i,j) - N(U(i,j)-U(i,j-1)-V(i-1,j))$\; 
+                        $d = r/(3N)$\;
+                        $ U(i,j)\quad\ \   = U(i,j) +d$\;
+                        $ U(i,j-1)=U(i,j-1)-d;\ \ \ \ \ V(i-1,j)= V(i-1,j)-d$\;
+                        $P(i,j)\quad\ \ = P(i,j) + r$\;
+                        $ P(i,j-1)=P(i,j-1) -r/3;\ \  P(i,j+1)=P(i,j+1)-r/3$\;
+                        $ P(i-1,j)=P(i-1,j)-r/3$\;
+                    }
+                    \If{$(i,j)$是顶点单元(以2.2节图3所示为例)}{
+                        $r = D(i,j) - N(U(i,j)-V(i-1,j))$\; 
+                        $d = r/(2N)$\;
+                        $ U(i,j)\quad\ \   = U(i,j) +d;\qquad\quad\   V(i-1,j)= V(i-1,j)-d$\;
+                        
+                        $ P(i,j)\quad\ \ = P(i,j) + r$\;
+                        $ P(i,j+1)=P(i,j+1)-r/2;\ \ P(i-1,j)=P(i-1,j)-r/2$\;
+                        
+                    }
+                }
+            }
+        \end{algorithm}
+    \end{subsection}
+    \newpage
+    \begin{subsection}{多重网格方法}
+        交错网格形式下的多重网格方法采用的提升、限制算子如图所示：
+        \begin{figure}[H]
+            \caption{提升算子与限制算子的选取}
+            \centering
+        \begin{tikzpicture}[scale=1.3]
+            node[rectangle];
+            \draw [black!50,thin] (0,0) grid (8,8);
+            \draw [black,very thick, step = 2] (0,0) grid (8,8);
+
+            \foreach \i in {1,2,3,4,5}{
+                \foreach \j in {1,2,3,4}{
+                    \filldraw [red]  (2*\j-2*0.5-1.5*0.1,2*\i-2*1+1.5*0.1) -- (2*\j-2*0.5+1.5*0.1,2*\i-2*1+1.5*0.1) --(2*\j-2*0.5+1.5*0.1,2*\i-2*1-1.5*0.1) -- (2*\j-2*0.5-1.5*0.1,2*\i-2*1-1.5*0.1) --cycle ;
+                    \filldraw [orange]  (2*\i-2*1,2*\j-2*0.5+1.5*0.15) -- (2*\i-2*1+1.5*0.1,2*\j-2*0.5) -- (2*\i-2*1,2*\j-2*0.5-1.5*0.15) -- (2*\i-2*1-1.5*0.1,2*\j-2*0.5) --cycle;
+                }
+            }
+            \foreach \i in {1,...,9}{
+                \foreach \j in {1,...,8}{
+                    \filldraw [pink]  (\j-0.6,\i-1+0.1) -- (\j-0.4,\i-1+0.1) -- (\j-0.4,\i-1-0.1) -- (\j-0.6,\i-1-0.1) --cycle ;
+                    \filldraw [purple!70]  (\i-1,\j-1+0.65) -- (\i-1+0.1,\j-0.5) -- (\i-1,\j-1+0.35) -- (\i-1-0.1,\j-0.5) --cycle;
+                }
+            }
+            \foreach \i in {1,2,3,4}{
+                \foreach \j in {1,2,3,4}{
+                    \filldraw[blue] (2*\i-1,2*\j-1) circle (0.2);
+                }
+            }
+            \foreach \i in {1,...,8}{
+                \foreach \j in {1,...,8}{
+                    \filldraw[blue!50] (\i-0.5,\j-0.5) circle (0.1);
+                }
+            }
+            \node[rectangle] at (0,-0.5)(A) {\makecell{\textbf{限制算子:}}};
+            \filldraw[orange] (0,-0.75) -- (0.1,-0.9)coordinate(B)node[right=0.1pt,black]{=最近两个} -- (0,-1.05) -- (-0.1,-0.9) --cycle;
+            \filldraw[purple!70] (1.9,-0.75) -- (2.0,-0.9)coordinate(B)node[right=0.1pt,black]{/4 +次近四个} -- (1.9,-1.05) -- (1.8,-0.9) --cycle;
+            \filldraw[purple!70] (4.1,-0.75) -- (4.2,-0.9)coordinate(B)node[right=0.1pt,black]{/8} -- (4.1,-1.05) -- (4.0,-0.9) --cycle;
+
+            \filldraw [red]  (-0.1,-1.3) -- (0.1,-1.3) --node[right=0.1pt,black]{=最近两个} (0.1,-1.5) -- (-0.1,-1.5) --cycle ;
+            \filldraw [pink]  (1.8,-1.3) -- (2.0,-1.3) --node[right=0.1pt,black]{/4 +次近四个} (2.0,-1.5) -- (1.8,-1.5) --cycle ;
+            \filldraw [pink]  (4.0,-1.3) -- (4.2,-1.3) --node[right=0.1pt,black]{/8} (4.2,-1.5) -- (4.0,-1.5) --cycle ;
+
+            \filldraw [blue] (0,-1.9) circle (0.1); \node[rectangle] at (0.92,-1.9)(A) {=最近四个};
+            \filldraw [blue!50] (1.9,-1.9) circle (0.1); \node[rectangle] at (2.23,-1.9)(A) {/4};
+
+            \node[rectangle] at (5.5,-0.5)(A) {\makecell{\textbf{提升算子:}}};
+            \filldraw[purple!70] (5.5,-0.75) -- (5.6,-0.9)coordinate(B)node[right=0.1pt,black]{(粗网格线)=最近} -- (5.5,-1.05) -- (5.4,-0.9) --cycle;
+            \filldraw[orange] (8.1,-0.75) -- (8.2,-0.9) -- (8.1,-1.05) -- (8.0,-0.9) --cycle;
+            \filldraw[purple!70] (5.5,-1.25) -- (5.6,-1.4)coordinate(B)node[right=0.1pt,black]{(细网格线)=最近两个}-- (5.5,-1.55) -- (5.4,-1.4) --cycle ;
+            \filldraw [orange]  (8.7,-1.25) -- (8.8,-1.4)coordinate(B)node[right=0.1pt,black]{/2} --(8.7,-1.55) -- (8.6,-1.4) --cycle ;
+            
+            \filldraw [pink]  (5.4,-1.8) -- (5.6,-1.8) --node[right=0.1pt,black]{(粗网格线)=最近} (5.6,-2.0) -- (5.4,-2.0) --cycle ;
+            \filldraw [red]  (8.0,-1.8) -- (8.2,-1.8) -- (8.2,-2.0) -- (8.0,-2.0) --cycle ;
+            \filldraw [pink]  (5.4,-2.3) -- (5.6,-2.3) --node[right=0.1pt,black]{(细网格线)=最近两个} (5.6,-2.5) -- (5.4,-2.5) --cycle ;
+            \filldraw [red]  (8.6,-2.3) -- (8.8,-2.3) --node[right=0.1pt,black]{/2} (8.8,-2.5) -- (8.6,-2.5) --cycle ;
+
+            \filldraw [blue!50] (5.5,-2.8) circle (0.1); \node[rectangle] at (6.2,-2.8)(A) {=最近};
+            \filldraw [blue] (6.8,-2.8) circle (0.1); 
+        \end{tikzpicture}
+    \end{figure}
+
+    记提升算子、限制算子分别为函数 prolongation, restriction. 交错网格下的V-cycle多重网格方法按如下方式实现(磨光子smoother在第一问中取为DGS, 在第三问中取为GS):
+
+    \ 
+
+    \begin{algorithm}[H]
+        \caption{V-cycle多重网格方法}%算法名字
+        \LinesNumbered %要求显示行号
+        \KwIn{V-cycle层数$r$, 前磨光次数$\nu_1$, 后磨光次数$\nu_2$, 初值$X$, 常数项$b$, 磨光子smoother }
+        \KwOut{迭代一次后的解$X$=Vcycle($r,\nu_1,\nu_2,X,b,$smoother)}
+        \eIf{$r==0$}{
+            $X=$真解\;
+            (由于题中矩阵实际上是奇异的, 因此实际实现时求的是近似解, 即用磨光子磨光$\nu_1+\nu_2$次)
+        }{
+            \For{$i=1:\nu_1$}{
+                $X$ = smoother($X,b$)\;
+            }
+            $res = b-AX;\ $
+            $r_0$ = restriction($res$)\;
+            $e_0$ = Vcycle($r-1,\nu_1,\nu_2,O,r_0,smoother$);$\ $
+            $e$ = prolongation($e_0$)\;
+            $X = X+e$\;
+            \For{$i=1:\nu_2$}{
+                $X$ = smoother($X,b$)\;
+            }
+        }
+    \end{algorithm}
+    \end{subsection}
+    
+    \begin{subsection}{Uzawa迭代法}
+        Uzawa迭代法的实现在数值方法(2.3节)已经写明. 下面给出Inexact Uzawa迭代法中, 
+        以V-cycle为预条件子, 用预优共轭梯度法(PCG)求解子问题$AU_{k+1}=F-BP_k$的具体实现:
+        \begin{algorithm}[]
+            \caption{以V-cycle为预条件子的共轭梯度法}
+            \LinesNumbered
+            \KwIn{近似解精度要求$\tau$,前后磨光次数$\nu_1,\nu_2$,V-cycle层数$r$,上一步散度残量$r_0$,初值$X$,常数项$b$}
+            \KwOut{近似解$X$=PCG($\tau,\nu_1,\nu_2,r,r_0,X,b$)}
+            $k = 0$\;
+            $res=b-AX$\;
+            \While{$\lVert res\rVert_2>\tau\lVert r_0\rVert_2$ }{
+                $z$ = Vcycle($r,\nu_1,\nu_2,O,res$,GS)\;
+                $k=k+1$\;
+                \eIf{$k==1$}{
+                    $p=z;$\  $\rho=res^Tz$\;
+                }{
+                    $\tilde{\rho}=\rho;\ \rho=res^Tz$\;
+                    $\beta = \rho/\tilde{\rho};\ p = z + \beta p$\;
+                }
+                $w = Ap;\ a = \rho/p^Tw$\;
+                $X = X + ap;\ res = res -aw$\;
+            }
+        \end{algorithm}
+    \end{subsection}
+\end{section}
+
+\newpage
+\begin{section}{数值结果及相应分析}
+    取PPT上的算例, 迭代法均以初值为0进行数值试验.
+    \begin{subsection}{以DGS为磨光子的V-cycle多重网格方法}
+        对$N=64,128,256,512,1024,2048$, 以$\nu_1=\nu_2=3,\ L=N/2$(网格层数$r+1=\log_2N$)为初始状态, 分别调整$\nu_1,\nu_2,r$计算达到精度要求所需的CPU时间与V-cycle次数, 结果如下:
+
+        \begin{table}[!htbp]
+            \caption{$\nu_2=3,L=N/2$时随$\nu_1$变化的CPU时间(s)}
+            \centering
+            \begin{tabular}{|c|cccccccccc|}
+                \hline
+            \diagbox{N}{$\nu_1$}     & 1        & 2        & 3        & 4        & 5        & 6        & 7        & 8        & 9        & 10       \\
+            \hline
+            64   & 0.0249 & 0.020 & 0.020 & 0.021 & 0.024 & 0.025 & 0.030 & 0.033 & 0.046 & 0.034 \\
+            128  & 0.0730 & 0.0970 & 0.092  & 0.083 & 0.092 & 0.099 & 0.107 & 0.117 & 0.125 & 0.126 \\
+            256  & 0.327 & 0.328 & 0.376  & 0.428 & 0.399 & 0.507 & 0.525 & 0.597 & 0.647 & 0.646 \\
+            512  & 2.352 & 2.286 & 2.480  & 2.884 & 3.186 & 2.962 & 3.247 & 3.463 & 3.728 & 4.059 \\
+            1024 & 12.700 & 13.031 & 15.170 & 16.752 & 18.552 & 17.547 & 19.279 & 20.917 & 22.405 & 23.926 \\
+            2048 & 62.438 & 64.268 & 72.889 & 82.596 & 91.682 & 86.038 & 93.524 & 101.535 & 108.989 & 116.972 \\
+            \hline
+            \end{tabular}
+        \end{table}
+
+        \begin{table}[!htbp]
+            \caption{$\nu_2=3,L=N/2$时随$\nu_1$变化的V-cycle次数}
+            \centering
+            
+            \begin{tabular}{|c|cccccccccc|}
+                \hline
+            \diagbox{N}{$\nu_1$}     & $\quad 1\quad$        & $\quad 2 \quad$  & $\quad  3 \quad$ & $\quad  4 \quad$& $\quad  5 \quad$&$\quad  6 \quad$ & $\quad  7\quad$&$\quad  8 \quad$ &$\quad  9 \quad$ & $\quad  10\quad$\\
+            \hline
+            64   & 7 & 7 & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 5  \\
+            128  & 8 & 7 & 7 & 6 & 6 & 6 & 6 & 6 & 6 & 6  \\
+            256  & 8 & 7 & 7 & 7 & 6 & 6 & 6 & 6 & 6 & 6  \\
+            512  & 8 & 7 & 7 & 7 & 7 & 6 & 6 & 6 & 6 & 6  \\
+            1024 & 8 & 7 & 7 & 7 & 7 & 6 & 6 & 6 & 6 & 6  \\
+            2048 & 8 & 7 & 7 & 7 & 7 & 6 & 6 & 6 & 6 & 6 \\
+            \hline
+            \end{tabular}
+        \end{table}
+
+        \begin{table}[!htbp]
+            \caption{$\nu_1=3,L=N/2$时随$\nu_2$变化的CPU时间(s)}
+            \centering
+            \begin{tabular}{|c|cccccccccc|}
+                \hline
+            \diagbox{N}{$\nu_2$}     & 1        & 2        & 3        & 4        & 5        & 6        & 7        & 8        & 9        & 10       \\
+            \hline
+            64   & 0.329  & 0.048  & 0.048  & 0.042  & 0.036  & 0.044  & 0.031  & 0.031  & 0.033  & 0.035   \\
+            128  & 0.107  & 0.137  & 0.139  & 0.103  & 0.109  & 0.116  & 0.100  & 0.132  & 0.122  & 0.130   \\
+            256  & 0.438  & 0.452  & 0.440  & 0.429  & 0.475  & 0.523  & 0.563  & 0.514  & 0.539  & 0.572   \\
+            512  & 2.413  & 2.144  & 2.443  & 2.327  & 3.438  & 3.103  & 5.082  & 3.256  & 3.562  & 5.652   \\
+            1024 & 20.719 & 20.526 & 17.682 & 17.028 & 23.383 & 19.869 & 20.553 & 18.134 & 19.621 & 21.348  \\
+            2048 & 74.769 & 77.584 & 77.553 & 87.454 & 82.842 & 91.873 & 99.822 & 90.993 & 97.085 & 104.249 \\
+            \hline
+            \end{tabular}
+        \end{table}
+
+        \begin{table}[!htbp]
+            \caption{$\nu_1=3,L=N/2$时随$\nu_2$变化的V-cycle次数}
+            \centering
+            
+            \begin{tabular}{|c|cccccccccc|}
+                \hline
+            \diagbox{N}{$\nu_2$}     & $\quad 1\quad$        & $\quad 2 \quad$  & $\quad  3 \quad$ & $\quad  4 \quad$& $\quad  5 \quad$&$\quad  6 \quad$ & $\quad  7\quad$&$\quad  8 \quad$ &$\quad  9 \quad$ & $\quad  10\quad$\\
+            \hline
+            64   & 8 & 7 & 6 & 6 & 6 & 6 & 5 & 5 & 5 & 5  \\
+            128  & 8 & 7 & 7 & 6 & 6 & 6 & 5 & 5 & 5 & 5  \\
+            256  & 9 & 8 & 7 & 6 & 6 & 6 & 6 & 5 & 5 & 5  \\
+            512  & 9 & 7 & 7 & 6 & 6 & 6 & 6 & 5 & 5 & 5  \\
+            1024 & 9 & 8 & 7 & 6 & 6 & 6 & 6 & 5 & 5 & 5  \\
+            2048 & 9 & 8 & 7 & 7 & 6 & 6 & 6 & 5 & 5 & 5 \\
+            \hline
+            \end{tabular}
+        \end{table}
+
+        \begin{minipage}{1.0\textwidth}
+            \begin{minipage}[t]{0.5\textwidth}
+            \begin{table}[H]
+                \centering
+            \caption{$\nu_1=\nu_2=3$时随$L$变化的CPU时间(s)}
+            \begin{tabular}{|c|cccc|}
+                \hline
+            \diagbox{N}{$L$}     & $N/2^1$        & $N/2^2$        & $N/2^3$        & $N/2^4$ \\
+            \hline
+            64   & 0.035  & 0.026  & 0.085   & 0.469   \\
+            128  & 0.101  & 0.100  & 0.311   & 1.150   \\
+            256  & 0.438  & 0.439  & 1.526   & 5.250   \\
+            512  & 2.661  & 2.631  & 8.211   & 29.698  \\
+            1024 & 15.151 & 15.136 & 47.926  & 168.882 \\
+            2048 & 74.162 & 73.109 & 230.706 & 795.285 \\
+            \hline
+            \end{tabular}
+            \end{table}
+            \end{minipage}
+            \begin{minipage}[t]{0.5\textwidth}
+            \begin{table}[H]
+                \centering
+            \caption{$\nu_1=\nu_2=3$时随$L$变化的V-cycle次数}
+            \begin{tabular}{|c|cccc|}
+                \hline
+            \diagbox{N}{$L$}     & $N/2^1$        & $N/2^2$        & $N/2^3$        & $N/2^4$ \\
+            \hline
+            64   & 6 & 7 & 23 & 87 \\
+            128  & 7 & 7 & 23 & 84 \\
+            256  & 7 & 7 & 23 & 82 \\
+            512  & 7 & 7 & 22 & 80 \\
+            1024 & 7 & 7 & 22 & 78 \\
+            2048 & 7 & 7 & 22 & 76 \\
+            \hline
+            \end{tabular}
+            \end{table}
+        \end{minipage}
+    \end{minipage}
+\newline
+    
+    取$N=2048$时的计算结果可作下图:
+    \begin{figure}[!htbp]
+        \centering
+    \begin{tikzpicture}[]
+        \begin{axis}[axis y line*=left, xlabel=前磨光次数$\nu_1$,  ylabel=CPU时间(s)] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+            \addplot[mark=o,blue] coordinates{
+                ( 1 , 62.4378283 )( 2 , 64.2681794 )( 3 , 72.8895377 )( 4 , 82.5957151 )( 5 , 91.682086 )( 6 , 86.0379505 )( 7 , 93.5240842 )( 8 , 101.5351428 )( 9 , 108.9893352 )( 10 , 116.9715786 )
+            };\label{plot_one}
+            %\addlegendentry{CPU时间}
+        \end{axis}
+        \begin{axis}[axis y line*=right, axis x line=none, ylabel=V-cycle次数,ymax=9,ymin=5,legend style={at={(1.8,0.5)},anchor=east}]
+            \addplot[mark=*,red] coordinates{
+                ( 1 , 8 )( 2 , 7 )( 3 , 7 )( 4 , 7 )( 5 , 7 )( 6 , 6 )( 7 , 6 )( 8 , 6 )( 9 , 6 )( 10 , 6 )
+            };
+            \addlegendentry{V-cycle次数}
+            \addlegendimage{/pgfplots/refstyle=plot_one}\addlegendentry{CPU时间}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{$N=2^{11},\nu_2=3,L=2^{10}$时, V-cycle次数与CPU时间随$\nu_1$变化图}
+    \label{fig:nu1}
+    \end{figure}
+
+    \begin{figure}[!htbp]
+        \centering
+    \begin{tikzpicture}[]
+        \begin{axis}[axis y line*=left, xlabel=后磨光次数$\nu_2$,  ylabel=CPU时间(s)] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+            \addplot[mark=o,blue] coordinates{
+                ( 1 , 74.7694818 )( 2 , 77.5844549 )( 3 , 77.5532192 )( 4 , 87.4536845 )( 5 , 82.841813 )( 6 , 91.8728721 )( 7 , 99.8221743 )( 8 , 90.9934836 )( 9 , 97.0853649 )( 10 , 104.2493166 )
+            };\label{plot_two}
+            %\addlegendentry{CPU时间}
+        \end{axis}
+        \begin{axis}[axis y line*=right, axis x line=none, ylabel=V-cycle次数, legend style={at={(1.8,0.5)},anchor=east}]
+            \addplot[mark=*,red] coordinates{
+                ( 1 , 9 )( 2 , 8 )( 3 , 7 )( 4 , 7 )( 5 , 6 )( 6 , 6 )( 7 , 6 )( 8 , 5 )( 9 , 5 )( 10 , 5 )
+            };
+            \addlegendentry{V-cycle次数}
+            \addlegendimage{/pgfplots/refstyle=plot_two}\addlegendentry{CPU时间}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{$N=2^{11},\nu_1=3,L=2^{10}$时, V-cycle次数与CPU时间随$\nu_2$变化图}
+    \label{fig:nu2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[]
+    \begin{axis}[axis y line*=left, xlabel=网格层数$r+1$,xtick={8,9,10,11},  ylabel=CPU时间(s)] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+        \addplot[mark=o,blue] coordinates{
+            (11,74.1618038)(10,	73.108905)	(9,230.7061894)	(8,795.2852773)
+
+        };\label{plot_thr}
+        %\addlegendentry{CPU时间}
+    \end{axis}
+    \begin{axis}[axis y line*=right, axis x line=none, xtick={8,9,10,11}, ylabel=V-cycle次数,ymax=120,ymin=0, legend style={at={(1.8,0.5)},anchor=east}]
+        \addplot[mark=*,red] coordinates{
+            (11,7)(10,7)(9,22)(8,76)
+        };
+        \addlegendentry{V-cycle次数}
+        \addlegendimage{/pgfplots/refstyle=plot_thr}\addlegendentry{CPU时间}
+    \end{axis}
+\end{tikzpicture}
+\caption{$N=2^{11},\nu_1=\nu_2=3$时, V-cycle次数与CPU时间随网格层数$r+1$变化图}
+\label{fig:level}
+\end{figure}
+
+对每个网格规模$N$计算恰好满足精度要求时的误差, 如下图所示:
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[]
+    \begin{loglogaxis}[ xlabel=网格规模$N$,  axis y line=none, log ticks with fixed point, xtick={64,128,256,512,1024,2048},xticklabels={$64$,$128$,$256$,$512$,$1024$,$2048$}] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+        \addplot coordinates{
+            ( 64 , 0.001495077 )( 128 , 0.000373629 )( 256 , 9.34e-05 )( 512 , 2.33e-05 )( 1024 , 5.84e-06 )( 2048 , 1.46e-06 )
+        };
+        \addlegendentry{平均误差}
+    \end{loglogaxis}
+    \begin{loglogaxis}[ylabel=误差, axis x line=none]
+        \addplot coordinates{
+            ( 64 , 0.001495077 )( 128 , 0.000373629 )( 256 , 9.34e-05 )( 512 , 2.33e-05 )( 1024 , 5.84e-06 )( 2048 , 1.46e-06 )
+        };
+    \end{loglogaxis}
+\end{tikzpicture}
+\caption{以DGS为磨光子的V-cycle多重网格方法得到的误差随网格规模变化图}
+\label{fig:error1}
+\end{figure}
+    
+    由图表结果可知:
+    \begin{itemize}
+        \item 随着前磨光次数、后磨光次数的增加, 所需的V-cycle次数减少, 但磨光增多的时间成本高于减少的循环次数, CPU时间仍然呈上升趋势;
+        \item 随着网格层数增加, 所需CPU时间和V-cycle次数显著降低;
+        \item 与前磨光次数相比, 后磨光次数的变化对所需的V-cycle次数影响略大; 两者影响基本相当;
+        \item 与前后磨光次数相比, 网格层数的变化对所需CPU时间和V-cycle次数影响更大. 这说明限制在粗网格上磨光对误差的削减效果比单纯在细网格上增加磨光次数带来的效果更显著;
+        \item 随着网格规模$N$增大, 达到精度要求时数值解与真解的平均误差降低.
+    \end{itemize}
+    \end{subsection}
+
+    \begin{subsection}{Exact Uzawa迭代法}
+        对$N=64,128,256,512$, 使用Exact Uzawa迭代法得到数值解, 与真解的误差如图所示:
+        \begin{figure}[!htbp]
+            \centering
+        \begin{tikzpicture}[]
+            \begin{loglogaxis}[ xlabel=网格规模$N$,  axis y line=none, ymin=0.00001,log ticks with fixed point, xtick={64,128,256,512},xticklabels={64,128,256,512}] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+                \addplot coordinates{
+                    ( 64 , 0.001495079 )( 128 , 0.000373629 )( 256 , 0.0000933984854850632 )( 512 , 0.0000233490720391101 )
+                };
+                \addlegendentry{平均误差}
+            \end{loglogaxis}
+            \begin{loglogaxis}[ylabel=误差, axis x line=none,ymin=0.00001]
+                \addplot coordinates{
+                    ( 64 , 0.001495079 )( 128 , 0.000373629 )( 256 , 0.0000933984854850632 )( 512 , 0.0000233490720391101 )
+                };
+            \end{loglogaxis}
+        \end{tikzpicture}
+        \caption{Exact Uzawa迭代法得到的误差随网格规模变化图}
+        \label{fig:error2}
+        \end{figure}
+
+        由图像可知, 随着网格规模增加, 达精度要求的数值解与真解的误差降低; 并且同一网格规模、同一初值的情况下, 
+        Exact Uzawa方法与以DGS为磨光子的V-cycle多重网格方法得到的误差几乎相等.
+    \end{subsection}
+    \begin{subsection}{Inexact Uzawa迭代法}
+        对$N=64,128,256,512,1024,2048$, 以$\alpha=1,\tau=2,\nu_1=\nu_2=3,\ L=N/2$(网格层数$r+1=\log_2N$)为初始状态, 分别调整$\alpha,\tau,\nu_1,\nu_2,r$(由于V-cycle中已经看出$\nu_{1,2}$的影响相差不大, 因此此处取$\nu_1=\nu_2$一起调整.)计算达到精度要求所需的CPU时间与外循环迭代次数, 结果如下:
+        
+        \begin{table}[!htbp]
+            \caption{$\alpha=1,\nu_1=\nu_2=3,L=N/2$时随$\tau$变化的CPU时间(s)}
+            \centering
+            \begin{tabular}{|c|cccccccccc|}
+                \hline
+            \diagbox{N}{$\tau$}     & 0.2        & 0.4        & 0.6        & 0.8        & 1.0        & 1.2        & 1.4        & 1.6        & 1.8        & 2.0       \\
+            \hline
+            64   & 0.039   & 0.028   & 0.027   & 0.030   & 0.038   & 0.037   & 0.031   & 0.030   & 0.036   & 0.054   \\
+            128  & 0.157   & 0.119   & 0.110   & 0.134   & 0.110   & 0.118   & 0.112   & 0.126   & 0.127   & 0.143   \\
+            256  & 0.591   & 0.515   & 0.533   & 0.517   & 0.542   & 0.525   & 0.521   & 0.505   & 0.527   & 0.538   \\
+            512  & 3.818   & 3.882   & 3.648   & 3.356   & 3.096   & 3.068   & 3.152   & 3.107   & 3.337   & 3.389   \\
+            1024 & 21.652  & 23.144  & 22.298  & 21.543  & 21.608  & 21.648  & 20.701  & 20.831  & 20.987  & 20.807  \\
+            2048 & 132.544 & 120.557 & 115.602 & 116.179 & 111.502 & 111.208 & 111.161 & 111.567 & 112.556 & 111.439 \\
+            \hline
+            \end{tabular}
+
+            \begin{tabular}{|c|cccccccccc|}
+                \hline
+            \diagbox{N}{$\tau$}     & 2.2        & 2.4        & 2.6        & 2.8        & 3.0        & 3.2        & 3.4        & 3.6        & 3.8        & 4.0       \\
+            \hline
+            64   & 0.037   & 0.028   & 0.040   & 0.039   & 0.033   & 0.032  & 0.032   & 0.033   & 0.032   & 0.031   \\
+            128  & 0.124   & 0.121   & 0.126   & 0.130   & 0.133   & 0.117  & 0.113   & 0.109   & 0.114   & 0.129   \\
+            256  & 0.516   & 0.525   & 0.531   & 0.500   & 0.519   & 0.530  & 0.510   & 0.531   & 0.521   & 0.504   \\
+            512  & 3.200   & 3.246   & 3.197   & 3.427   & 3.222   & 2.962  & 2.990   & 3.017   & 3.034   & 3.017   \\
+            1024 & 20.392  & 20.666  & 20.540  & 19.397  & 19.390  & 19.374 & 19.402  & 19.643  & 19.595  & 19.652  \\
+            2048 & 111.314 & 106.644 & 106.548 & 102.031 & 101.896 & 97.760 & 102.300 & 102.200 & 101.918 & 103.574 \\
+            \hline
+            \end{tabular}
+        \end{table}
+
+        \begin{table}[!htbp]
+            \caption{$\alpha=1,\nu_1=\nu_2=3,L=N/2$时随$\tau$变化的外循环迭代次数}
+            \centering
+            
+            \begin{tabular}{|c|cccccccccc|}
+                \hline
+            \diagbox{N}{$\tau$}     & $\quad 0.2\quad$        & $\quad 0.4 \quad$  & $\quad  0.6\quad$ & $\quad  0.8 \quad$& $\quad  1.0 \quad$&$\quad  1.2 \quad$ & $\quad  1.4\quad$&$\quad  1.6 \quad$ &$\quad  1.8 \quad$ & $\quad 2.0\quad$\\
+            \hline
+            64   & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 8  \\
+            128  & 6 & 6 & 6 & 7 & 7 & 7 & 7 & 7 & 7 & 7  \\
+            256  & 6 & 6 & 6 & 6 & 7 & 7 & 7 & 7 & 7 & 7  \\
+            512  & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 7 & 7  \\
+            1024 & 5 & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 6  \\
+            2048 & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 6 & 6 \\
+            \hline
+            \end{tabular}
+
+            \begin{tabular}{|c|cccccccccc|}
+                \hline
+            \diagbox{N}{$\tau$}     & $\quad 2.2\quad$        & $\quad 2.4 \quad$  & $\quad  2.6\quad$ & $\quad  2.8 \quad$& $\quad  3.0 \quad$&$\quad  3.2 \quad$ & $\quad  3.4\quad$&$\quad  3.6 \quad$ &$\quad  3.8 \quad$ & $\quad 4.0\quad$\\
+            \hline
+            64   & 8 & 8 & 9 & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
+            128  & 7 & 7 & 8 & 8  & 8  & 8  & 7  & 7  & 7  & 7  \\
+            256  & 7 & 7 & 7 & 7  & 7  & 7  & 7  & 7  & 7  & 7  \\
+            512  & 7 & 7 & 7 & 7  & 7  & 7  & 7  & 7  & 7  & 7  \\
+            1024 & 6 & 6 & 6 & 7  & 7  & 7  & 7  & 7  & 7  & 7  \\
+            2048 & 6 & 6 & 6 & 6  & 6  & 6  & 6  & 6  & 6  & 7 \\
+            \hline
+            \end{tabular}
+        \end{table}
+        
+        \begin{table}[!htbp]
+            \caption{$\tau=2,\nu_1=\nu_2=3,L=N/2$时随$\alpha$变化的CPU时间(s)}
+            \centering
+            \resizebox{17.2cm}{!}{
+            \begin{tabular}{|c|ccccccccccc|}
+                \hline
+            \diagbox{N}{$\alpha$}     & 0.5        & 0.6        & 0.7        & 0.8        & 0.9        & 1.0 & 1.1 & 1.2 & 1.3 & 1.4 & 1.5  \\
+            \hline
+            64   & 0.067   & 0.043   & 0.050   & 0.059   & 0.041   & 0.057   & 0.046   & 0.055   & 0.062   & 0.076   & 0.096   \\
+            128  & 0.219   & 0.255   & 0.242   & 0.174   & 0.141   & 0.121   & 0.159   & 0.184   & 0.251   & 0.288   & 0.379   \\
+            256  & 1.279   & 1.014   & 0.927   & 0.694   & 0.626   & 0.514   & 0.640   & 0.822   & 1.049   & 1.277   & 1.669   \\
+            512  & 7.408   & 6.746   & 5.645   & 4.707   & 3.821   & 3.342   & 4.227   & 5.561   & 6.948   & 9.222   & 12.167  \\
+            1024 & 48.725  & 39.359  & 32.770  & 33.540  & 26.400  & 20.977  & 25.992  & 31.563  & 42.623  & 52.871  & 70.068  \\
+            2048 & 248.198 & 230.756 & 189.224 & 160.474 & 129.700 & 110.324 & 130.148 & 178.472 & 215.554 & 264.801 & 337.976 \\
+            \hline
+            \end{tabular}}
+        \end{table}
+
+        \begin{table}[!htbp]
+            \caption{$\tau=2,\nu_1=\nu_2=3,L=N/2$时随$\alpha$变化的外循环迭代次数}
+            \centering
+            \resizebox{17.2cm}{!}{
+            \begin{tabular}{|c|ccccccccccc|}
+                \hline
+            \diagbox{N}{$\alpha$}     & $\quad 0.5\quad$        & $\quad 0.6 \quad$  & $\quad  0.7\quad$ & $\quad  0.8 \quad$& $\quad  0.9 \quad$&$\quad  1.0 \quad$& $\quad  1.1 \quad$ & $\quad  1.2 \quad$ & $\quad  1.3 \quad$ & $\quad  1.4 \quad$ & $\quad  1.5 \quad$\\
+            \hline
+            64   & 21  & 17 & 14 & 12 & 8 & 8 & 8 & 11 & 14 & 17 & 22 \\
+            128  & 21  & 15 & 12 & 10 & 8 & 7 & 9 & 11 & 14 & 18 & 24 \\
+            256  & 19  & 15 & 13 & 10 & 9 & 7 & 9 & 12 & 15 & 19 & 25 \\
+            512  & 19  & 16 & 13 & 11 & 9 & 7 & 9 & 12 & 14 & 18 & 23 \\
+            1024 & 19  & 16 & 13 & 11 & 8 & 6 & 7 & 9  & 12 & 15 & 20 \\
+            2048 & 20  & 13 & 11 & 9  & 7 & 6 & 7 & 10 & 12 & 16 & 20 \\
+            \hline
+            \end{tabular}}
+        \end{table}
+
+        \begin{table}[!htbp]
+            \caption{$\tau=2,\alpha=1,L=N/2$时随$\nu_1=\nu_2$变化的CPU时间(s)}
+            \centering
+            \begin{tabular}{|c|ccccccccc|}
+                \hline
+            \diagbox{N}{$\nu_{1,2}$}     & 2        & 3        & 4        & 5        & 6       & 7 & 8 & 9 & 10  \\
+            \hline
+            64   & 0.048   & 0.051   & 0.051  & 0.040   & 0.042   & 0.036   & 0.046   & 0.040   & 0.042   \\
+            128  & 0.136   & 0.140   & 0.115  & 0.134   & 0.130   & 0.129   & 0.146   & 0.157   & 0.137   \\
+            256  & 0.543   & 0.495   & 0.525  & 0.517   & 0.561   & 0.647   & 0.628   & 0.678   & 0.654   \\
+            512  & 3.212   & 3.249   & 2.916  & 3.170   & 3.314   & 3.637   & 3.825   & 4.460   & 4.138   \\
+            1024 & 19.981  & 20.418  & 19.644 & 19.944  & 20.752  & 22.949  & 25.080  & 25.629  & 27.570  \\
+            2048 & 116.559 & 109.936 & 97.587 & 105.197 & 111.394 & 123.031 & 126.831 & 137.741 & 149.530 \\
+            \hline
+            \end{tabular}
+        \end{table}
+
+        \begin{table}[!htbp]
+            \caption{$\tau=2,\alpha=1,L=N/2$时随$\nu_1=\nu_2$变化的外循环迭代次数}
+            \centering
+            
+            \begin{tabular}{|c|ccccccccc|}
+                \hline
+            \diagbox{N}{$\nu_{1,2}$}     & $\quad 2\quad$        & $\quad 3 \quad$  & $\quad  4\quad$ & $\quad  5 \quad$& $\quad  6 \quad$&$\quad  7 \quad$ & $\quad  8 \quad$ & $\quad  9 \quad$ & $\quad  10 \quad$\\
+            \hline
+            64   & 8   & 8 & 10 & 9 & 9 & 8 & 8 & 8 & 7 \\
+            128  & 8   & 7 & 6  & 8 & 8 & 8 & 8 & 8 & 7 \\
+            256  & 7   & 7 & 6  & 6 & 8 & 8 & 8 & 8 & 7 \\
+            512  & 6   & 7 & 6  & 6 & 6 & 6 & 8 & 8 & 7 \\
+            1024 & 6   & 6 & 6  & 6 & 6 & 6 & 6 & 6 & 6 \\
+            2048 & 6   & 6 & 6  & 6 & 6 & 6 & 6 & 6 & 6 \\
+            \hline
+            \end{tabular}
+        \end{table}
+
+        \begin{minipage}{1.0\textwidth}
+            \begin{minipage}[t]{0.47\textwidth}
+            \begin{table}[H]
+                \centering
+                %\captionsetup{format=plain}
+            \caption{$\tau=2,\alpha=1,\nu_1=\nu_2=3$时\\随$L$变化的CPU时间(s)}
+            \begin{tabular}{|c|cccc|}
+                \hline
+            \diagbox{N}{$L$}     & $N/2^1$        & $N/2^2$        & $N/2^3$        & $N/2^4$ \\
+            \hline
+            64   & 0.038   & 0.024   & 0.047   & 0.120   \\
+            128  & 0.125   & 0.099   & 0.181   & 0.354   \\
+            256  & 0.478   & 0.483   & 0.806   & 1.693   \\
+            512  & 3.211   & 3.233   & 5.245   & 9.671   \\
+            1024 & 20.456  & 20.572  & 29.067  & 52.666  \\
+            2048 & 110.314 & 111.045 & 141.993 & 312.938 \\
+            \hline
+            \end{tabular}
+            \end{table}
+            \end{minipage}
+            \begin{minipage}[t]{0.47\textwidth}
+            \begin{table}[H]
+                \centering
+            \caption{$\tau=2,\alpha=1,\nu_1=\nu_2=3$时\\随$L$变化的外循环迭代次数}
+            \begin{tabular}{|c|cccc|}
+                \hline
+            \diagbox{N}{$L$}     & $N/2^1$        & $N/2^2$        & $N/2^3$        & $N/2^4$ \\
+            \hline
+            64   & 8   & 6 & 11 & 12 \\
+            128  & 7   & 6 & 9  & 13 \\
+            256  & 7   & 7 & 8  & 11 \\
+            512  & 7   & 7 & 8  & 10 \\
+            1024 & 6   & 6 & 7  & 8  \\
+            2048 & 6   & 6 & 6  & 8 \\
+            \hline
+            \end{tabular}
+            \end{table}
+        \end{minipage}
+    \end{minipage}
+    
+    \ 
+
+    \ 
+
+    取$N=1024$时的计算结果可作下图:
+        \begin{figure}[H]
+            \centering
+        \begin{tikzpicture}[]
+            \begin{axis}[axis y line*=left, xlabel=$\tau$, xmin=0, ylabel=CPU时间(s)] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+                \addplot[mark=o,blue] coordinates{
+                    ( 0.2 , 21.6524696 )( 0.4 , 23.1435953 )( 0.6 , 22.2976029 )( 0.8 , 21.5431655 )( 1 , 21.6084538 )( 1.2 , 21.6479282 )( 1.4 , 20.7011773 )( 1.6 , 20.8310349 )( 1.8 , 20.986985 )( 2 , 20.8067666 )( 2.2 , 20.3923088 )( 2.4 , 20.6660333 )( 2.6 , 20.5398678 )( 2.8 , 19.3972661 )( 3 , 19.390415 )( 3.2 , 19.3743535 )( 3.4 , 19.401864 )( 3.6 , 19.6434912 )( 3.8 , 19.5945078 )( 4 , 19.651596 )
+                };\label{plot_fiv}
+                %\addlegendentry{CPU时间}
+            \end{axis}
+            \begin{axis}[axis y line*=right, axis x line=none,xmin=0, ylabel=外循环迭代次数,legend style={at={(1.8,0.5)},anchor=east}]
+                \addplot[mark=*,red] coordinates{
+                    ( 0.2 , 5 )( 0.4 , 6 )( 0.6 , 6 )( 0.8 , 6 )( 1.0 , 6 )( 1.2 , 6 )( 1.4 , 6 )( 1.6 , 6 )( 1.8 , 6 )( 2.0 , 6 )( 2.2 , 6 )( 2.4 , 6 )( 2.6 , 6 )( 2.8 , 7 )( 3.0 , 7 )( 3.2 , 7 )( 3.4 , 7 )( 3.6 , 7 )( 3.8 , 7 )( 4.0 , 7 )
+                };
+                \addlegendentry{外循环迭代次数}
+                \addlegendimage{/pgfplots/refstyle=plot_fiv}\addlegendentry{CPU时间}
+            \end{axis}
+        \end{tikzpicture}
+        \caption{$N=2^{10},\alpha=1,\nu_1=\nu_2=3,L=2^{9}$时, 外循环迭代次数与CPU时间随$\tau$变化图}
+        \label{fig:tau}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+        \begin{tikzpicture}[]
+            \begin{axis}[axis y line*=left, xlabel=$\alpha$,  ylabel=CPU时间(s)] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+                \addplot[mark=o,blue] coordinates{
+                    ( 0.5 , 48.7247858 )( 0.6 , 39.3585543 )( 0.7 , 32.7697131 )( 0.8 , 33.5404176 )( 0.9 , 26.4001618 )( 1.0 , 20.9770537 )( 1.1 , 25.9916128 )( 1.2 , 31.5632052 )( 1.3 , 42.6233882 )( 1.4 , 52.8709307 )( 1.5 , 70.0675726 )
+                };\label{plot_six}
+                %\addlegendentry{CPU时间}
+            \end{axis}
+            \begin{axis}[axis y line*=right, axis x line=none, ylabel=外循环迭代次数,ymax=25,ymin=0,legend style={at={(1.8,0.5)},anchor=east}]
+                \addplot[mark=*,red] coordinates{
+                    ( 0.5 , 19 )( 0.6 , 16 )( 0.7 , 13 )( 0.8 , 11 )( 0.9 , 8 )( 1.0 , 6 )( 1.1 , 7 )( 1.2 , 9 )( 1.3 , 12 )( 1.4 , 15 )( 1.5 , 20 )
+                };
+                \addlegendentry{外循环迭代次数}
+                \addlegendimage{/pgfplots/refstyle=plot_six}\addlegendentry{CPU时间}
+            \end{axis}
+        \end{tikzpicture}
+        \caption{$N=2^{10},\tau=2,\nu_1=\nu_2=3,L=2^{9}$时, 外循环迭代次数与CPU时间随$\alpha$变化图}
+        \label{fig:alpha}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+        \begin{tikzpicture}[]
+            \begin{axis}[axis y line*=left, xlabel=前后磨光次数$\nu_{1,2}$,  ylabel=CPU时间(s)] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+                \addplot[mark=o,blue] coordinates{
+                    ( 2 , 19.9808326 )( 3 , 20.4181951 )( 4 , 19.6439331 )( 5 , 19.944289 )( 6 , 20.75195 )( 7 , 22.9490283 )( 8 , 25.0795692 )( 9 , 25.6290437 )( 10 , 27.5702738 )
+                };\label{plot_sev}
+                %\addlegendentry{CPU时间}
+            \end{axis}
+            \begin{axis}[axis y line*=right, axis x line=none, ylabel=外循环迭代次数,ymax=7,ymin=5,ytick={5,6,7},legend style={at={(1.8,0.5)},anchor=east}]
+                \addplot[mark=*,red] coordinates{
+                    ( 2 , 6 )( 3 , 6 )( 4 , 6 )( 5 , 6 )( 6 , 6 )( 7 , 6 )( 8 , 6 )( 9 , 6 )( 10 , 6 )
+                };
+                \addlegendentry{外循环迭代次数}
+                \addlegendimage{/pgfplots/refstyle=plot_sev}\addlegendentry{CPU时间}
+            \end{axis}
+        \end{tikzpicture}
+        \caption{$N=2^{10},\alpha=1,\tau=2,L=2^{9}$时, 外循环迭代次数与CPU时间随$\nu_1=\nu_2$变化图}
+        \label{fig:nu12}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+        \begin{tikzpicture}[]
+            \begin{axis}[axis y line*=left, xlabel=网格层数$r+1$,xtick={7,8,9,10}, ylabel=CPU时间(s)] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+                \addplot[mark=o,blue] coordinates{
+                    ( 10 , 20.4558938 )( 9 , 20.5722876 )( 8 , 29.067475 )( 7 , 52.6664776 )
+                };\label{plot_eig}
+                %\addlegendentry{CPU时间}
+            \end{axis}
+            \begin{axis}[axis y line*=right, axis x line=none, ylabel=外循环迭代次数,ymin=5,ymax=9,legend style={at={(1.8,0.5)},anchor=east}]
+                \addplot[mark=*,red] coordinates{
+                    ( 10 , 6 )( 9 , 6 )( 8 , 7 )( 7 , 8 )
+                };
+                \addlegendentry{外循环迭代次数}
+                \addlegendimage{/pgfplots/refstyle=plot_eig}\addlegendentry{CPU时间}
+            \end{axis}
+        \end{tikzpicture}
+        \caption{$N=2^{10},\alpha=1,\tau=2,\nu_1=\nu_2=3$时, 外循环迭代次数与CPU时间随网格层数$r+1$变化图}
+        \label{fig:L}
+        \end{figure}
+        
+        对每个网格规模$N$计算恰好满足精度要求时的误差, 如下图所示:
+
+        \begin{figure}[H]
+            \centering
+        \begin{tikzpicture}[]
+            \begin{loglogaxis}[ xlabel=网格规模$N$,  axis y line=none, log ticks with fixed point, xtick={64,128,256,512,1024,2048},xticklabels={$64$,$128$,$256$,$512$,$1024$,$2048$}] % sharp plot: 折线图，通过修改此类型，即可完成多种图形绘制
+                \addplot coordinates{
+                    ( 64 , 0.001495079)( 128 , 0.000373629103266486 )( 256 , 0.000093398485501739 )( 512 , 0.0000233490720719259 )( 1024 , 0.0000058372336945241 )( 2048 , 1.45930631169702E-06 )
+                };
+                \addlegendentry{平均误差}
+            \end{loglogaxis}
+            \begin{loglogaxis}[ylabel=误差, axis x line=none]
+                \addplot coordinates{
+                    ( 64 , 0.001495079)( 128 , 0.000373629103266486 )( 256 , 0.000093398485501739)( 512 , 0.0000233490720719259 )( 1024 , 0.0000058372336945241 )( 2048 , 1.45930631169702E-06 )
+                };
+            \end{loglogaxis}
+        \end{tikzpicture}
+        \caption{Inexact Uzawa迭代法得到的误差随网格规模变化图}
+        \label{fig:error3}
+        \end{figure}
+
+        由图表结果可知:
+        \begin{itemize}
+            \item 其他条件不变, 在迭代法仍能收敛时, 随着$\tau$增大, 外循环迭代次数呈上升趋势, CPU时间呈下降趋势; 这说明在迭代法能收敛的情况下, $\tau$更大、近似解精度要求更低, 尽管会导致外循环次数增加, 但依然有利于加速收敛.
+            \item 其他条件不变, 随着$\alpha$向$1$靠近, 外循环迭代次数与CPU时间均呈下降趋势;
+            \item 其他条件不变, 在磨光次数不小于2时, 随着前后磨光次数同时增加, CPU时间增加, 但外循环迭代次数几乎不变. 这说明继续增加磨光次数, 对一次Vcycle近似求解$Az_k=p_k$的精度影响不显著, 因此共轭梯度法求解子问题的近似解差异不大, 
+            导致外循环次数变化不大, 用于磨光的时间成本几乎没有回报;
+            \item 其他条件不变, 随着网格层数增加, 外循环迭代次数与CPU时间呈显著下降趋势;
+            \item 与$\tau$、 磨光次数$\nu_{1,2}$相比, $\alpha$、 网格层数$r+1$的改变对CPU时间的影响更显著; 这是因为: 迭代法的参数$\alpha$基本决定外循环迭代次数, 而网格层数$r+1$最能影响预条件子预优效率. 这两个参数对Inexact Uzawa方法的效率影响最显著.
+            \item 随着网格规模增加, 达精度要求的数值解与真解的误差降低; 并且同一网格规模、同一初值的情况下, 
+            Inexact Uzawa方法与Exact Uzawa、以DGS为磨光子的V-cycle多重网格方法得到的误差几乎相等.
+            
+        \end{itemize}
+    \end{subsection}
+\end{section}
+\end{document}
